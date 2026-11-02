@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Tasks · AlphaAnalytics Delegation</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="brand">AlphaAnalytics Solutions</div>
+    <div class="brand-sub">Delegation Command Center</div>
+    <a class="nav-link" href="index.html">Dashboard</a>
+    <a class="nav-link" href="assign-task.html">Assign a Task</a>
+    <a class="nav-link active" href="my-tasks.html">My Tasks</a>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>My tasks</h1>
+      <div class="who">
+        Viewing as
+        <select id="personSelect"></select>
+      </div>
+    </div>
+
+    <div class="content" id="taskList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script>
+  function render() {
+    const name = document.getElementById("personSelect").value;
+    localStorage.setItem("currentUser", name);
+
+    Api.getTasksFor(name).then(tasks => {
+      const wrap = document.getElementById("taskList");
+
+      if (!tasks.length) {
+        wrap.innerHTML = `<div class="card"><div class="empty-state">Nothing assigned to you right now.</div></div>`;
+        return;
+      }
+
+      wrap.innerHTML = tasks.map(t => `
+        <div class="card" data-id="${t.taskId}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:12px;color:var(--muted);">${t.taskId} · from ${t.delegatedBy}</div>
+              <h2 style="margin:4px 0 0;">${t.task}</h2>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <span class="badge ${statusBadgeClass(t.status)}">${t.status}</span>
+              <span class="badge ${priorityBadgeClass(t.priority)}">${t.priority}</span>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:10px;">Plan date: ${t.planDate || "Not set"}${t.remarks ? " · Delegator remarks: " + t.remarks : ""}</p>
+
+          <label>Status</label>
+          <select class="statusInput">
+            ${["Pending","In Progress","On Hold","Completed"].map(s => `<option ${s === t.status ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+
+          <label>Your remarks <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <textarea class="remarksInput" placeholder="Progress notes, blockers, anything useful"></textarea>
+
+          <label>Next plan date <span style="font-weight:400;color:var(--muted);">(if not finishing on schedule)</span></label>
+          <input type="date" class="nextDateInput">
+
+          <div class="btn-row">
+            <button class="btn save-btn">Save update</button>
+            <button class="btn danger reject-btn">Reject task</button>
+          </div>
+
+          <div class="reject-form" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <label>Reason for rejecting</label>
+            <select class="rejectReason">
+              <option>Current workload is too high</option>
+              <option>Insufficient time to complete</option>
+              <option>Insufficient knowledge or skills</option>
+              <option>Not clear what's required</option>
+              <option>Other</option>
+            </select>
+
+            <label>Can you accept it if the issue is resolved?</label>
+            <select class="rejectCanAccept">
+              <option>Yes</option>
+              <option>Maybe, depending on the resolution</option>
+              <option>No</option>
+            </select>
+
+            <label>Explain why you can't accept this task</label>
+            <textarea class="rejectExplain"></textarea>
+
+            <label>What would help you complete this task?</label>
+            <textarea class="rejectHelp"></textarea>
+
+            <div class="btn-row">
+              <button class="btn danger confirm-reject-btn">Confirm rejection</button>
+              <button class="btn secondary cancel-reject-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      wrap.querySelectorAll(".card").forEach(card => {
+        const taskId = card.dataset.id;
+
+        card.querySelector(".save-btn").addEventListener("click", () => {
+          Api.updateStatus({
+            taskId,
+            status: card.querySelector(".statusInput").value,
+            employeeRemarks: card.querySelector(".remarksInput").value.trim(),
+            nextPlanDate: card.querySelector(".nextDateInput").value
+          }).then(() => { showToast(`${taskId} updated`); render(); });
+        });
+
+        const rejectForm = card.querySelector(".reject-form");
+        card.querySelector(".reject-btn").addEventListener("click", () => rejectForm.style.display = "block");
+        card.querySelector(".cancel-reject-btn").addEventListener("click", () => rejectForm.style.display = "none");
+
+        card.querySelector(".confirm-reject-btn").addEventListener("click", () => {
+          Api.rejectTask({
+            taskId,
+            reason: card.querySelector(".rejectReason").value,
+            canAccept: card.querySelector(".rejectCanAccept").value,
+            explanation: card.querySelector(".rejectExplain").value.trim(),
+            helpNeeded: card.querySelector(".rejectHelp").value.trim()
+          }).then(() => { showToast(`${taskId} rejected`); render(); });
+        });
+      });
+    });
+  }
+
+  Api.getPeople().then(people => {
+    const select = document.getElementById("personSelect");
+    select.innerHTML = people.map(p => `<option value="${p.name}">${p.name} — ${p.department}</option>`).join("");
+    const saved = localStorage.getItem("currentUser");
+    if (saved && people.some(p => p.name === saved)) select.value = saved;
+    select.addEventListener("change", render);
+    render();
+  });
+</script>
+</body>
+</html>

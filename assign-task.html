@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assign a Task · AlphaAnalytics Delegation</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="brand">AlphaAnalytics Solutions</div>
+    <div class="brand-sub">Delegation Command Center</div>
+    <a class="nav-link" href="index.html">Dashboard</a>
+    <a class="nav-link active" href="assign-task.html">Assign a Task</a>
+    <a class="nav-link" href="my-tasks.html">My Tasks</a>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Assign a task</h1>
+      <div class="who">
+        Delegating as
+        <select id="personSelect"></select>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="card">
+        <h2>Task details</h2>
+        <form id="taskForm">
+          <label for="delegatedTo">Assign to</label>
+          <select id="delegatedTo" required></select>
+          <div class="hint">Only people in your department are listed, unless you're an Admin.</div>
+
+          <label for="task">Task</label>
+          <textarea id="task" required placeholder="What needs to get done?"></textarea>
+
+          <label for="project">Project <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <input id="project" type="text" placeholder="e.g. QuickBite Analysis">
+
+          <label for="planDate">Plan date</label>
+          <input id="planDate" type="date" required>
+
+          <label for="priority">Priority</label>
+          <select id="priority">
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+            <option>Urgent</option>
+          </select>
+
+          <label for="remarks">Remarks <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <textarea id="remarks" placeholder="Any context for the person doing this"></textarea>
+
+          <label for="resourceLink">Resource link <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <input id="resourceLink" type="url" placeholder="https://drive.google.com/...">
+
+          <div class="btn-row">
+            <button type="submit" class="btn">Assign task</button>
+            <button type="reset" class="btn secondary">Clear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script>
+  let people = [];
+
+  Api.getPeople().then(list => {
+    people = list;
+    const select = document.getElementById("personSelect");
+    select.innerHTML = people.map(p => `<option value="${p.name}">${p.name} — ${p.department}</option>`).join("");
+    const saved = localStorage.getItem("currentUser");
+    if (saved && people.some(p => p.name === saved)) select.value = saved;
+    select.addEventListener("change", onPersonChange);
+    onPersonChange();
+  });
+
+  function onPersonChange() {
+    const select = document.getElementById("personSelect");
+    localStorage.setItem("currentUser", select.value);
+    const me = people.find(p => p.name === select.value);
+    const isAdmin = me && me.role === "Admin";
+    const pool = isAdmin ? people : people.filter(p => p.department === me.department && p.name !== me.name);
+    const assignSelect = document.getElementById("delegatedTo");
+    assignSelect.innerHTML = pool.length
+      ? pool.map(p => `<option value="${p.name}">${p.name} — ${p.department}</option>`).join("")
+      : `<option value="">No one else in your department yet</option>`;
+  }
+
+  document.getElementById("taskForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const me = document.getElementById("personSelect").value;
+
+    const fields = {
+      delegatedBy: me,
+      delegatedTo: document.getElementById("delegatedTo").value,
+      task: document.getElementById("task").value.trim(),
+      project: document.getElementById("project").value.trim(),
+      planDate: document.getElementById("planDate").value,
+      priority: document.getElementById("priority").value,
+      remarks: document.getElementById("remarks").value.trim(),
+      resourceLink: document.getElementById("resourceLink").value.trim()
+    };
+
+    if (!fields.delegatedTo) {
+      showToast("Pick someone to assign this to first.");
+      return;
+    }
+
+    Api.createTask(fields).then(res => {
+      showToast(`Assigned as ${res.taskId}`);
+      e.target.reset();
+      onPersonChange();
+    });
+  });
+</script>
+</body>
+</html>
