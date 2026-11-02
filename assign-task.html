@@ -30,9 +30,9 @@
       <div class="card">
         <h2>Task details</h2>
         <form id="taskForm">
-          <label for="delegatedTo">Assign to</label>
-          <select id="delegatedTo" required></select>
-          <div class="hint">Only people in your department are listed, unless you're an Admin.</div>
+          <label>Assign to</label>
+          <div class="picker-list" id="delegatedToPicker"></div>
+          <div class="hint">Everyone in your department is listed, unless you're an Admin. Inactive people can't be selected.</div>
 
           <label for="task">Task</label>
           <textarea id="task" required placeholder="What needs to get done?"></textarea>
@@ -83,16 +83,36 @@
     onPersonChange();
   });
 
+  let selectedAssignee = "";
+
   function onPersonChange() {
     const select = document.getElementById("personSelect");
     localStorage.setItem("currentUser", select.value);
     const me = people.find(p => p.name === select.value);
     const isAdmin = me && me.role === "Admin";
     const pool = isAdmin ? people : people.filter(p => p.department === me.department && p.name !== me.name);
-    const assignSelect = document.getElementById("delegatedTo");
-    assignSelect.innerHTML = pool.length
-      ? pool.map(p => `<option value="${p.name}">${p.name} — ${p.department}</option>`).join("")
-      : `<option value="">No one else in your department yet</option>`;
+    selectedAssignee = "";
+
+    const picker = document.getElementById("delegatedToPicker");
+
+    if (!pool.length) {
+      picker.innerHTML = `<div class="empty-state">No one else in your department yet.</div>`;
+      return;
+    }
+
+    picker.innerHTML = pool.map(p => `
+      <div class="picker-row ${p.active ? "" : "disabled"}" data-name="${p.name}">
+        <span><span class="picker-name">${p.name}</span><span class="picker-dept">${p.department}</span></span>
+        <span class="badge ${p.active ? "active-badge" : "inactive-badge"}">${p.active ? "Active" : "Inactive"}</span>
+      </div>`).join("");
+
+    picker.querySelectorAll(".picker-row:not(.disabled)").forEach(row => {
+      row.addEventListener("click", () => {
+        picker.querySelectorAll(".picker-row").forEach(r => r.classList.remove("selected"));
+        row.classList.add("selected");
+        selectedAssignee = row.dataset.name;
+      });
+    });
   }
 
   document.getElementById("taskForm").addEventListener("submit", e => {
@@ -101,7 +121,7 @@
 
     const fields = {
       delegatedBy: me,
-      delegatedTo: document.getElementById("delegatedTo").value,
+      delegatedTo: selectedAssignee,
       task: document.getElementById("task").value.trim(),
       project: document.getElementById("project").value.trim(),
       planDate: document.getElementById("planDate").value,
