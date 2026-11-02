@@ -17,19 +17,20 @@
 const APPS_SCRIPT_URL = ""; // fill in once the Web App is deployed
 
 const MOCK_PEOPLE = [
-  { name: "ARUN", email: "alphaanalyticssolutions@gmail.com", department: "IT", role: "Manager" },
-  { name: "YASH", email: "alphaanalyticssolutions@gmail.com", department: "ADMIN", role: "Admin" },
-  { name: "ANKIT", email: "alphaanalyticssolutions@gmail.com", department: "Sales", role: "Manager" },
-  { name: "AJAY", email: "alphaanalyticssolutions@gmail.com", department: "Data Analysis & Science", role: "Manager" },
-  { name: "AVINASH", email: "happytheking111@gmail.com", department: "IT", role: "Employee" },
-  { name: "YOGESH", email: "happytheking111@gmail.com", department: "IT", role: "Employee" },
-  { name: "KIRTI", email: "happytheking111@gmail.com", department: "Data Analysis & Science", role: "Employee" },
-  { name: "AKANSHA", email: "happytheking111@gmail.com", department: "Data Analysis & Science", role: "Employee" },
-  { name: "RITIKA", email: "happytheking111@gmail.com", department: "IT", role: "Employee" },
-  { name: "RASHMI", email: "happytheking111@gmail.com", department: "HR", role: "Employee" },
-  { name: "VIVEK", email: "happytheking111@gmail.com", department: "Data Analysis & Science", role: "Employee" },
-  { name: "ARJUN", email: "happytheking111@gmail.com", department: "Sales", role: "Employee" },
-  { name: "JULI", email: "happytheking111@gmail.com", department: "Finance", role: "Employee" }
+  { name: "ARUN", email: "alphaanalyticssolutions@gmail.com", department: "IT", role: "Manager", active: true },
+  { name: "YASH", email: "alphaanalyticssolutions@gmail.com", department: "ADMIN", role: "Admin", active: true },
+  { name: "ANKIT", email: "alphaanalyticssolutions@gmail.com", department: "Sales", role: "Manager", active: true },
+  { name: "AJAY", email: "alphaanalyticssolutions@gmail.com", department: "Data Analysis & Science", role: "Manager", active: true },
+  { name: "AVINASH", email: "happytheking111@gmail.com", department: "IT", role: "Employee", active: true },
+  { name: "YOGESH", email: "happytheking111@gmail.com", department: "IT", role: "Employee", active: true },
+  { name: "AMAN", email: "happytheking111@gmail.com", department: "IT", role: "Employee", active: false },
+  { name: "KIRTI", email: "happytheking111@gmail.com", department: "Data Analysis & Science", role: "Employee", active: true },
+  { name: "AKANSHA", email: "happytheking111@gmail.com", department: "Data Analysis & Science", role: "Employee", active: true },
+  { name: "RITIKA", email: "happytheking111@gmail.com", department: "IT", role: "Employee", active: true },
+  { name: "RASHMI", email: "happytheking111@gmail.com", department: "HR", role: "Employee", active: true },
+  { name: "VIVEK", email: "happytheking111@gmail.com", department: "Data Analysis & Science", role: "Employee", active: true },
+  { name: "ARJUN", email: "happytheking111@gmail.com", department: "Sales", role: "Employee", active: true },
+  { name: "JULI", email: "happytheking111@gmail.com", department: "Finance", role: "Employee", active: true }
 ];
 
 const MOCK_TASKS = [
