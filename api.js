@@ -14,7 +14,7 @@
  *   POST {action:"rejectTask", ...fields}     -> new Rejected Tasks row
  */
 
-const APPS_SCRIPT_URL = ""; // fill in once the Web App is deployed
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbFVJpse5cCuiTNf1UwIH7My8JOeBYFKCk-87Wv52UJccmiGztboegX42SGYZWYE3J/exec"; // fill in once the Web App is deployed
 
 const MOCK_PEOPLE = [
   { name: "ARUN", email: "alphaanalyticssolutions@gmail.com", department: "IT", role: "Manager", active: true },
