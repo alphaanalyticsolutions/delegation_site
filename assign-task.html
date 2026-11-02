@@ -103,7 +103,7 @@
     picker.innerHTML = pool.map(p => `
       <div class="picker-row ${p.active ? "" : "disabled"}" data-name="${p.name}">
         <span><span class="picker-name">${p.name}</span><span class="picker-dept">${p.department}</span></span>
-        <span class="badge ${p.active ? "active-badge" : "inactive-badge"}">${p.active ? "Active" : "Inactive"}</span>
+        <span class="picker-status">${p.active ? "Active" : "Inactive"}</span>
       </div>`).join("");
 
     picker.querySelectorAll(".picker-row:not(.disabled)").forEach(row => {
